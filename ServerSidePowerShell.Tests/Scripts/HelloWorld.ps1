@@ -1,0 +1,1 @@
+﻿Out-String "Hello World"

@@ -28,7 +28,8 @@ namespace ServerSidePowerShell
             Runspace runspace = RunspaceFactory.CreateRunspace(config);
             runspace.Open();
             RunspaceInvoke scriptInvoker = new RunspaceInvoke(runspace);
-// scriptInvoker.Invoke("Set-ExecutionPolicy Unrestricted -Scope Process");
+            scriptInvoker.Invoke("Set-ExecutionPolicy Unrestricted -Scope Process");
+
             using (runspace)
             {
                 PowerShell powershell = PowerShell.Create();
@@ -38,8 +39,8 @@ namespace ServerSidePowerShell
                 var pipeline = runspace.CreatePipeline();
                 using (pipeline)
                 {
-                    string scriptFullPath = @"C:\Users\asakashita\Documents\WindowsPowerShell\jobsch.ps1";
-                    var cmd = new Command(scriptFullPath);
+                    string scriptFullPath = contextBase.Request.PhysicalPath;
+                    var cmd = new Command(scriptFullPath, true);
 
                     IEnumerable<string> parameters = null;
                     if (parameters != null)
