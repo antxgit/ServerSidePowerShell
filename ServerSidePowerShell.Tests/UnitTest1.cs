@@ -11,7 +11,7 @@ namespace ServerSidePowerShell.Tests
         [ClassInitialize]
         public static void TestClassInitialize(TestContext testContext)
         {
-            ScriptTestBase.TestClassInitialize(testContext);
+            ScriptTestBase.TestBaseInitialize(testContext);
         }
 
 
@@ -19,48 +19,19 @@ namespace ServerSidePowerShell.Tests
         [DeploymentItem("Scripts\\HelloWorld.ps1", "Scripts")]
         public void TestPlaneScript()
         {
-            HttpServerUtilityMock httpServerUtilityMock = new HttpServerUtilityMock();
-            HttpContextBase httpContextMock = new HttpContextMock
+            var script = GetScript("HelloWorld.ps1");
+
+            var webMock = new WebMocks
             {
-                TheRequest = new HttpRequestMock { MyPhysicalPath = GetScript("HelloWorld.ps1") },
-                TheServer = httpServerUtilityMock
+                PhysicalPath = GetScript("HelloWorld.ps1")
             };
 
+            var httpContext = webMock.CreateHttpContext();
+
             var targetHandler = new PowerShellHttpHandler();
-            targetHandler.ProcessRequest(httpContextMock);
-            Assert.Equals(httpContextMock.Response.ToString(), "HelloWorld!");
+            targetHandler.ProcessRequest(httpContext);
+            Assert.AreEqual("Hello World!", webMock.GetResponseAsText());
 
-        }
-    }
-    class HttpRequestMock : HttpRequestBase
-    {
-        public override bool IsAuthenticated { get { return IsItAuthenticated; } }
-        public bool IsItAuthenticated { get; set; }
-
-        public override string PhysicalPath => MyPhysicalPath;
-        public string MyPhysicalPath { get; set; }
-
-    }
-
-    class HttpContextMock : HttpContextBase
-    {
-        public override HttpRequestBase Request { get { return TheRequest; } }
-        public override HttpServerUtilityBase Server { get { return TheServer; } }
-        public HttpRequestBase TheRequest { get; set; }
-        public HttpServerUtilityBase TheServer { get; set; }
-
-    }
-
-    class HttpServerUtilityMock : HttpServerUtilityBase
-    {
-        private string _path;
-        public override void TransferRequest(string path)
-        {
-            _path = path;
-        }
-        public void ShouldHaveTransferredTo(string expectedPath)
-        {
-            Assert.AreEqual(expectedPath, _path);
         }
     }
 }

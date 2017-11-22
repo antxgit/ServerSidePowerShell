@@ -14,7 +14,7 @@ namespace ServerSidePowerShell.Tests
         private static string testScriptDir;
 
         [ClassInitialize]
-        public static void TestClassInitialize(TestContext testContext)
+        public static void TestBaseInitialize(TestContext testContext)
         {
             testScriptDir = Path.Combine(testContext.DeploymentDirectory, "Scripts");
         }

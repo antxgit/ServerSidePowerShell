@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
@@ -21,7 +22,7 @@ namespace ServerSidePowerShell
 
         }
 
-
+        
         internal void ProcessRequest(HttpContextBase contextBase)
         {
             RunspaceConfiguration config = RunspaceConfiguration.Create();
@@ -39,23 +40,55 @@ namespace ServerSidePowerShell
                 var pipeline = runspace.CreatePipeline();
                 using (pipeline)
                 {
-                    string scriptFullPath = contextBase.Request.PhysicalPath;
-                    var cmd = new Command(scriptFullPath, true);
 
-                    IEnumerable<string> parameters = null;
-                    if (parameters != null)
+                    string scriptFullPath = contextBase.Request.PhysicalPath;
+                    using (StreamReader sr = new StreamReader(scriptFullPath))
                     {
-                        foreach (var p in parameters)
+                        // Read the stream to a string, and write the string to the console.
+                        String scriptContent = sr.ReadToEnd();
+                        pipeline.Commands.AddScript(scriptContent);
+                        //var cmd = new Command(scriptContent);
+
+                        Command myCommand = new Command(scriptFullPath);
+                        CommandParameter testParam = new CommandParameter("key", "value");
+                        myCommand.Parameters.Add(testParam);
+
+                        pipeline.Commands.Add(myCommand);
+
+                        IEnumerable<string> parameters = null;
+
+                        if (parameters != null)
                         {
-                            cmd.Parameters.Add(p);
                         }
+
                     }
-                    pipeline.Commands.Add(cmd);
+
+                    var psRequest = new PSHttpRequest(contextBase.Request);
+                    var psResponse = new PSHttpResponse(contextBase.Request);
+
+                    runspace.SessionStateProxy.SetVariable("Request", psRequest);
+                    runspace.SessionStateProxy.SetVariable("Response", psResponse);
+
                     var results = pipeline.Invoke();
-                    foreach(var result in results)
+
+                    System.Collections.ObjectModel.Collection<PSObject> outputs = pipeline.Output.NonBlockingRead();
+
+                    foreach (var output in outputs)
                     {
-                        Console.WriteLine(result);
+                        contextBase.Response.Write("o:" + output.ToString());
                     }
+
+                    foreach (var result in results)
+                    {
+                        contextBase.Response.Write("r:" + result.ToString());
+
+                    }
+                    foreach (var error in powershell.Streams.Error)
+                    {
+                        contextBase.Response.Write("e:" + error);
+                    }
+
+
                 }
 
             }

@@ -46,8 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PowerShellHttpHandler.cs" />
+    <Compile Include="PowershellHttpHandlerFactory.cs" />
     <Compile Include="PowershellHttpModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PSHttpRequest.cs" />
+    <Compile Include="PSHttpResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

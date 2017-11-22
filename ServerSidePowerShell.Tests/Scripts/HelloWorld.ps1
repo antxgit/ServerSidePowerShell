@@ -1,1 +1,1 @@
-﻿Out-String "Hello World"
+﻿"Hello World!"
